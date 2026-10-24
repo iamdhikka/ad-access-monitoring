@@ -62,6 +62,12 @@ Pertanyaan yang biasa diajukan auditor, tim security, dan manajemen IT:
 
 Semua aturan alert punya unit test (`prometheus/alerts_test.yml`), dijalankan dengan `promtool test rules`.
 
+## Access review satu kali (tanpa memasang monitoring)
+
+Folder [`access-review/`](access-review/) berisi skrip PowerShell **read-only** yang dijalankan tim IT klien dengan akun domain biasa, dan generator laporan PDF berisi temuan, tingkat risiko, dan rekomendasi. Lihat [contoh laporannya](access-review/contoh-laporan-access-review.pdf).
+
+![Contoh laporan](docs/contoh-laporan.png)
+
 ## Arsitektur
 
 ```
@@ -128,6 +134,7 @@ Hal yang perlu disesuaikan untuk produksi:
 
 ```
 samba/        Dockerfile + entrypoint domain controller (CA, sertifikat, provisioning, kebijakan lockout)
+access-review/ skrip ekspor PowerShell read-only + generator laporan PDF
 tools/        exporter.py (metrik Prometheus), simulate.py (data & aktivitas lab), adlib.py (koneksi LDAPS)
 prometheus/   konfigurasi scrape, aturan alert, unit test alert
 alertmanager/ routing ke Telegram
@@ -138,4 +145,4 @@ grafana/      datasource + dashboard yang ter-provision otomatis
 
 ## Jasa
 
-Saya membantu tim memantau dan merapikan akses Active Directory: dashboard access review, alert perubahan group privileged, deteksi akun stale dan leaver, serta monitoring Grafana untuk sistem lain. Hubungi saya lewat www.linkedin.com/in/andhika-suryamiharja atau suryamiharja96@gmail.com .
+Saya membantu tim memantau dan merapikan akses Active Directory: dashboard access review, alert perubahan group privileged, deteksi akun stale dan leaver, serta monitoring Grafana untuk sistem lain. Hubungi saya lewat [LinkedIn](#) atau [email](#).
