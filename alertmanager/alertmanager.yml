@@ -1,0 +1,23 @@
+route:
+  receiver: telegram
+  group_by: ["alertname", "group"]
+  group_wait: 20s
+  group_interval: 2m
+  repeat_interval: 4h
+
+receivers:
+  - name: telegram
+    telegram_configs:
+      # 1. Buat bot lewat @BotFather, salin token-nya ke bawah.
+      # 2. Kirim pesan ke bot, buka https://api.telegram.org/bot<TOKEN>/getUpdates untuk melihat chat_id.
+      - bot_token: "GANTI_DENGAN_TOKEN_BOT"
+        chat_id: 123456789
+        parse_mode: HTML
+        send_resolved: true
+        message: |
+          {{ if eq .Status "firing" }}🔴 <b>AD ALERT</b>{{ else }}✅ <b>RESOLVED</b>{{ end }}
+          {{ range .Alerts }}
+          <b>{{ .Annotations.summary }}</b>
+          {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}

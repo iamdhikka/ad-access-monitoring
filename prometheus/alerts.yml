@@ -1,0 +1,47 @@
+groups:
+  - name: active-directory-access
+    rules:
+      - alert: PrivilegedGroupMemberAdded
+        expr: increase(ad_privileged_group_changes_total{action="added"}[2m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Anggota baru di group {{ $labels.group }}"
+          description: "Ada akun yang ditambahkan ke {{ $labels.group }}. Pastikan perubahan ini punya tiket/approval."
+
+      - alert: TerminatedUserStillEnabled
+        expr: ad_users_terminated_still_enabled > 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $value }} akun karyawan keluar masih aktif"
+          description: "HR sudah menandai karyawan keluar, tapi akun AD-nya belum dinonaktifkan lebih dari 10 menit."
+
+      - alert: AccountLockoutSpike
+        expr: ad_users{status="locked"} >= 3
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $value }} akun terkunci"
+          description: "Beberapa akun terkunci bersamaan; periksa kemungkinan password spraying atau brute force."
+
+      - alert: StaleAccountsHigh
+        expr: sum(ad_users_stale) / sum(ad_users{status="enabled"}) * 100 > 5
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "Akun stale di atas 5% dari akun aktif"
+          description: "{{ $value | printf \"%.1f\" }}% akun aktif tidak login lebih dari 90 hari; jadwalkan access review."
+
+      - alert: ADMonitoringDown
+        expr: ad_up == 0 or absent(ad_up)
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Monitoring Active Directory tidak berjalan"
+          description: "Exporter tidak bisa membaca AD lewat LDAPS. Cek DC, sertifikat, atau password svc-monitor."

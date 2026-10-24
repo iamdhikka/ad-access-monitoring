@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: active-directory
+    static_configs:
+      - targets: ["ad-exporter:9300"]
+        labels:
+          domain: corp.lab

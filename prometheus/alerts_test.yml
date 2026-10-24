@@ -1,0 +1,57 @@
+# Unit test aturan alert: promtool test rules prometheus/alerts_test.yml
+rule_files:
+  - alerts.yml
+
+evaluation_interval: 30s
+
+tests:
+  - interval: 30s
+    input_series:
+      - series: 'ad_privileged_group_changes_total{group="Domain Admins",action="added"}'
+        values: '0 0 1 1 1 1 1 1'
+      - series: 'ad_users_terminated_still_enabled'
+        values: '1x40'
+      - series: 'ad_users{status="locked"}'
+        values: '0 0 3 3 3 3 3 3'
+      - series: 'ad_users{status="enabled"}'
+        values: '200x80'
+      - series: 'ad_users_stale{days="90"}'
+        values: '20x80'
+      - series: 'ad_up'
+        values: '1 1 1 0 0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: PrivilegedGroupMemberAdded
+        exp_alerts:
+          - exp_labels: {severity: critical, group: "Domain Admins", action: added}
+            exp_annotations:
+              summary: "Anggota baru di group Domain Admins"
+              description: "Ada akun yang ditambahkan ke Domain Admins. Pastikan perubahan ini punya tiket/approval."
+      - eval_time: 11m
+        alertname: TerminatedUserStillEnabled
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations:
+              summary: "1 akun karyawan keluar masih aktif"
+              description: "HR sudah menandai karyawan keluar, tapi akun AD-nya belum dinonaktifkan lebih dari 10 menit."
+      - eval_time: 3m
+        alertname: AccountLockoutSpike
+        exp_alerts:
+          - exp_labels: {severity: warning, status: locked}
+            exp_annotations:
+              summary: "3 akun terkunci"
+              description: "Beberapa akun terkunci bersamaan; periksa kemungkinan password spraying atau brute force."
+      - eval_time: 31m
+        alertname: StaleAccountsHigh
+        exp_alerts:
+          - exp_labels: {severity: info}
+            exp_annotations:
+              summary: "Akun stale di atas 5% dari akun aktif"
+              description: "10.0% akun aktif tidak login lebih dari 90 hari; jadwalkan access review."
+      - eval_time: 4m
+        alertname: ADMonitoringDown
+        exp_alerts:
+          - exp_labels: {severity: critical}
+            exp_annotations:
+              summary: "Monitoring Active Directory tidak berjalan"
+              description: "Exporter tidak bisa membaca AD lewat LDAPS. Cek DC, sertifikat, atau password svc-monitor."
